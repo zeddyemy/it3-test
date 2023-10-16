@@ -13,7 +13,7 @@ Flask-Migrate
 Flask-Moment
 Flask-RESTful
 Flask-SQLAlchemy
-Flask-WT
+Flask-WTF
 greenlet
 gunicorn
 idna

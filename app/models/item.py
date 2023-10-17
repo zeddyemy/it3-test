@@ -1,4 +1,3 @@
-import uuid
 from sqlalchemy.orm import backref
 from datetime import datetime
 
@@ -14,7 +13,6 @@ class Item(db.Model):
     item_type  = db.Column(db.String(), nullable=True) # either product or service to be uploaded to market place
     name = db.Column(db.String(100), nullable=False)
     description  = db.Column(db.String(), nullable=True)
-    item_img = db.Column(db.String(), nullable=True)
     price = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String(100), nullable=True)
     brand_name = db.Column(db.String(100), nullable=True)
@@ -22,12 +20,15 @@ class Item(db.Model):
     color = db.Column(db.String(), nullable=True)
     material = db.Column(db.String(300), nullable=True)
     phone = db.Column(db.String(100), nullable=True)
+    views_count = db.Column(db.Integer, default=0)
     slug = db.Column(db.String(), nullable=False, unique=True)
+    item_img = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     seller_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     seller = db.relationship('Trendit3User', backref=db.backref('items', lazy='dynamic'))
+    image = db.relationship('Image')
     
 
     def __repr__(self):
@@ -45,7 +46,7 @@ class Item(db.Model):
         db.session.commit()
     
     def get_item_img(self):
-        if self.item_img != '':
+        if self.item_img:
             theImage = Image.query.get(self.item_img)
             if theImage:
                 return theImage.get_path("original")
@@ -68,21 +69,26 @@ class Item(db.Model):
             'material': self.material,
             'phone': self.phone,
             'slug': self.slug,
+            'views_count': self.views_count,
+            'total_likes': len(list(self.likes)),
+            'total_comments': len(list(self.comments)),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'seller_id': self.seller_id,
         }
 
-class Like(db.Model):
-    __tablename__ = 'like'
+class LikeLog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
 
     # relationships
-    item = db.relationship('Item', backref=db.backref('likes', lazy='dynamic'))
+    liked_item = db.relationship('Item', backref=db.backref('likes', lazy='dynamic'))
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('likes', lazy='dynamic'))
     
     def __repr__(self):
-        return f'<Like ID: {self.id}, Item_ID: {self.item_id}, User_ID: {self.user_id}>'
+        return f'<LikeLog ID: {self.id}, Item_ID: {self.item_id}, User_ID: {self.user_id}>'
     
     def to_dict(self):
         return {
@@ -99,32 +105,11 @@ class Share(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
 
     # relationships
-    item = db.relationship('Item', backref=db.backref('shares', lazy='dynamic'))
+    shared_item = db.relationship('Item', backref=db.backref('shares', lazy='dynamic'))
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('shares', lazy='dynamic'))
     
     def __repr__(self):
         return f'<Share ID: {self.id}, Item_ID: {self.item_id}, User_ID: {self.user_id}>'
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.item_id,
-            'description': self.user_id,
-        }
-
-class View(db.Model):
-    __tablename__ = 'view'
-
-    id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
-
-    # relationships
-    item = db.relationship('Item', backref=db.backref('views', lazy='dynamic'))
-    trendit3_user = db.relationship('Trendit3User', backref=db.backref('views', lazy='dynamic'))
-    
-    def __repr__(self):
-        return f'<View ID: {self.id}, Item_ID: {self.item_id}, User_ID: {self.user_id}>'
     
     def to_dict(self):
         return {
@@ -143,7 +128,7 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # relationships
-    item = db.relationship('Item', backref=db.backref('comments', lazy='dynamic'))
+    commented_item = db.relationship('Item', backref=db.backref('comments', lazy='dynamic'))
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('comments', lazy='dynamic'))
     
     def __repr__(self):

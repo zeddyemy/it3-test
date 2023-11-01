@@ -204,6 +204,7 @@ class AuthController:
                         'message': 'User logged in successfully',
                         'status code': 200,
                         'user_id': user.id,
+                        'user_data': user.to_dict()
                     }), 200)
                     # Set access token in a secure HTTP-only cookie
                     set_access_cookies(resp, access_token)

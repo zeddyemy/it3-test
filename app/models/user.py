@@ -48,12 +48,21 @@ class Trendit3User(db.Model):
         db.session.commit()
     
     def to_dict(self):
+        address_info = {}
+        if self.address:
+            address_info.update({
+                'country': self.address.country,
+                'state': self.address.state,
+                'local_government': self.address.local_government
+            })
+
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'gender': self.gender,
-            'date_joined': self.date_joined
+            'date_joined': self.date_joined,
+            **address_info  # Merge address information into the output dictionary
         }
 
 class Address(db.Model):

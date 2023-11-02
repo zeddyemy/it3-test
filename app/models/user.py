@@ -3,6 +3,8 @@ from sqlalchemy.orm import backref
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from app.models.image import Image
+
 # Define the User data model. added flask_login UserMixin!!
 class Trendit3User(db.Model):
     __tablename__ = "trendit3_user"
@@ -12,6 +14,8 @@ class Trendit3User(db.Model):
     email = db.Column(db.String(255), nullable=False, unique=True)
     gender = db.Column(db.String(50), nullable=False)
     thePassword = db.Column(db.String(255), nullable=False)
+    balance = db.Column(db.Float, default=0)
+    profile_picture_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -47,6 +51,17 @@ class Trendit3User(db.Model):
         db.session.delete(self)
         db.session.commit()
     
+    
+    def get_profile_img(self):
+        if self.profile_picture_id:
+            theImage = Image.query.get(self.profile_picture_id)
+            if theImage:
+                return theImage.get_path("original")
+            else:
+                return None
+        else:
+            return None
+    
     def to_dict(self):
         address_info = {}
         if self.address:
@@ -61,9 +76,12 @@ class Trendit3User(db.Model):
             'username': self.username,
             'email': self.email,
             'gender': self.gender,
+            'profile_picture': self.get_profile_img(),
+            'balance': self.balance,
             'date_joined': self.date_joined,
             **address_info  # Merge address information into the output dictionary
         }
+
 
 class Address(db.Model):
     __tablename__ = "address"
@@ -72,6 +90,7 @@ class Address(db.Model):
     country = db.Column(db.String(50), nullable=False)
     state = db.Column(db.String(50), nullable=False)
     local_government = db.Column(db.String(100), nullable=False)
+    currency = db.Column(db.String(50), nullable=False)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="address")

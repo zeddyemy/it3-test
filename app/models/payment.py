@@ -39,20 +39,35 @@ class Transaction(db.Model):
             'status': self.status
         }
 
-'''
 class Wallet(db.Model):
     __tablename__ = "wallet"
 
     id = db.Column(db.Integer(), primary_key=True)
     balance = db.Column(db.Float(), default=00.00, nullable=False)
-    paystack_payment_authorization_token = db.Column(db.String(255), nullable=False)
-    currency_name = db.Column(db.String(200), nullable=False)
+    currency_name = db.Column(db.String(), nullable=False)
     currency_code = db.Column(db.String(), nullable=False)
-    symbol = db.Column(db.String(), nullable=False)
 
     # Relationship with the user model
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', back_populates="wallet")
+    
+    @classmethod
+    def create_wallet(cls, trendit3_user, balance, currency_name, currency_code, symbol):
+        wallet = cls(trendit3_user=trendit3_user, balance=balance, currency_name=currency_name, currency_code=currency_code)
+        
+        db.session.add(wallet)
+        db.session.commit()
+        return wallet
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
 
     def to_dict(self):
         return {
@@ -61,6 +76,5 @@ class Wallet(db.Model):
             'balance': self.balance,
             'currency_name': self.currency_name,
             'currency_code': self.currency_code,
-            'symbol': self.symbol
         }
-'''
+

@@ -74,6 +74,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
             authorization_url = response_data['data']['link'] # Get authorization URL from response
             extra_data = {
                 'authorization_url': authorization_url,
+                'payment_type': payment_type
             }
         else:
             error = True
@@ -101,7 +102,7 @@ def is_paid(user_id, payment_type):
 
     Args:
         user_id (int): The ID of the user to check.
-        payment_type (str): The type of payment to check. Can be 'activation_fee' or 'item_upload'.
+        payment_type (str): The type of payment to check. Can be 'activation_fee' or 'membership_fee'.
 
     Returns:
         bool: True if the user has paid the specified fee, False otherwise.
@@ -113,8 +114,8 @@ def is_paid(user_id, payment_type):
     
     if payment_type == 'activation_fee':
         paid = Trendit3_user.membership.activation_fee_paid
-    elif payment_type == 'item_upload':
-        paid = Trendit3_user.membership.item_upload_paid
+    elif payment_type == 'membership_fee':
+        paid = Trendit3_user.membership.membership_fee_paid
     
     return paid
 

@@ -61,11 +61,11 @@ class Trendit3User(db.Model):
         self.membership.activation_fee_paid = paid
         db.session.commit()
         
-    def marketplace_upload_fee(self, paid: bool) -> None:
+    def membership_fee(self, paid: bool) -> None:
         if not isinstance(paid, bool):
             raise TypeError("paid must be a boolean")
         
-        self.membership.item_upload_paid = paid
+        self.membership.membership_fee_paid = paid
         db.session.commit()
     
     def to_dict(self):

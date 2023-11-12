@@ -1,6 +1,6 @@
 import logging
-import json, requests, hashlib, hmac
-from flask import request, abort, jsonify
+import requests
+from flask import request, jsonify
 from sqlalchemy.exc import ( DataError, DatabaseError )
 from flask_jwt_extended import get_jwt_identity
 
@@ -9,8 +9,8 @@ from app.models.user import Trendit3User
 from app.models.payment import Payment, Transaction
 from app.models.task import Task
 from app.utils.helpers.response_helpers import error_response, success_response
-from app.utils.helpers.basic_helpers import generate_random_string, console_log
-from app.utils.helpers.payment_helpers import is_paid, initialize_payment, credit_wallet
+from app.utils.helpers.basic_helpers import console_log
+from app.utils.helpers.payment_helpers import initialize_payment, credit_wallet
 from app.utils.helpers.task_helpers import get_task_by_ref
 from config import Config
 
@@ -75,6 +75,7 @@ class PaymentController:
                     status_code = 200
                     msg = 'Payment verified successfully'
                     extra_data = {}
+                    
                     if transaction.status != 'Complete':
                         # Record the payment in the database
                         transaction.status = 'Complete'
@@ -82,44 +83,61 @@ class PaymentController:
                         db.session.add(payment)
                         db.session.commit()
                     
-                    # Update user's membership status in the database
-                    if payment_type == 'account-activation-fee':
-                        trendit3_user.activation_fee(paid=True)
-                        activation_fee_paid = trendit3_user.membership.activation_fee_paid
-                        
-                        msg = 'Payment verified successfully and Account has been activated'
-                        extra_data.update({
-                            'activation_fee_paid': activation_fee_paid,
-                        })
-                    elif payment_type == 'membership-fee':
-                        trendit3_user.membership_fee(paid=True)
-                        membership_fee_paid = trendit3_user.membership.membership_fee_paid
-                        
-                        msg = 'Payment verified successfully and Monthly subscription fee accepted'
-                        extra_data.update({
-                            'membership_fee_paid': membership_fee_paid,
-                        })
-                    elif payment_type == 'task_creation':
-                        task_ref = response_data['data']['meta']['task_ref']
-                        task = get_task_by_ref(task_ref)
-                        task.update(payment_status='Complete')
-                        task_dict = task.to_dict()
-                        
-                        msg = 'Payment verified and Task has been created successfully'
-                        extra_data.update({
-                            'task': task_dict,
-                        })
-                    elif payment_type == 'credit-wallet':
-                        # Credit user's wallet
-                        try:
-                            credit_wallet(user_id, amount)
-                        except ValueError as e:
-                            msg = f'Error crediting wallet. Please Try To Verify Again: {e}'
-                            return error_response(msg, 400)
-                        
-                        status_code = 200
-                        msg = 'Wallet Credited successfully'
-                        extra_data.update({'user': trendit3_user.to_dict()})
+                        # Update user's membership status in the database
+                        if payment_type == 'account-activation-fee':
+                            trendit3_user.activation_fee(paid=True)
+                            activation_fee_paid = trendit3_user.membership.activation_fee_paid
+                            
+                            msg = 'Payment verified successfully and Account has been activated'
+                            extra_data.update({
+                                'activation_fee_paid': activation_fee_paid,
+                            })
+                        elif payment_type == 'membership-fee':
+                            trendit3_user.membership_fee(paid=True)
+                            membership_fee_paid = trendit3_user.membership.membership_fee_paid
+                            
+                            msg = 'Payment verified successfully and Monthly subscription fee accepted'
+                            extra_data.update({
+                                'membership_fee_paid': membership_fee_paid,
+                            })
+                        elif payment_type == 'task_creation':
+                            task_ref = response_data['data']['meta']['task_ref']
+                            task = get_task_by_ref(task_ref)
+                            task.update(payment_status='Complete')
+                            task_dict = task.to_dict()
+                            
+                            msg = 'Payment verified and Task has been created successfully'
+                            extra_data.update({
+                                'task': task_dict,
+                            })
+                        elif payment_type == 'credit-wallet':
+                            # Credit user's wallet
+                            try:
+                                credit_wallet(user_id, amount)
+                            except ValueError as e:
+                                msg = f'Error crediting wallet. Please Try To Verify Again: {e}'
+                                return error_response(msg, 400)
+                            
+                            status_code = 200
+                            msg = 'Wallet Credited successfully'
+                            extra_data.update({'user': trendit3_user.to_dict()})
+                    
+                    elif transaction.status == 'Complete':
+                        if payment_type == 'account-activation-fee':
+                            msg = 'Payment verified successfully and Account is already activated'
+                            extra_data.update({'activation_fee_paid': trendit3_user.membership.activation_fee_paid})
+                        elif payment_type == 'membership-fee':
+                            msg = 'Payment verified successfully and Membership fee already accepted'
+                            extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
+                        elif payment_type == 'task_creation':
+                            task_ref = response_data['data']['meta']['task_ref']
+                            task = get_task_by_ref(task_ref)
+                            task_dict = task.to_dict()
+                            msg = 'Payment verified and Task has already been created successfully'
+                            extra_data.update({'task': task_dict})
+                        elif payment_type == 'credit-wallet':
+                            msg = 'Wallet already credited successfully'
+                            extra_data.update({'user': trendit3_user.to_dict()})
                     
                 else:
                     # Payment was not successful

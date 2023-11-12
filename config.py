@@ -10,7 +10,7 @@ class Config:
     SECRET_KEY = os.urandom(32)
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:zeddy@localhost:5432/trendit3'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')\
-        or 'postgresql://trendit3_4h66_user:HD1UVAA64Ww3CRvkMyBkeeijzN6TyLzn@dpg-cknbo8iv7m0s73dq1ang-a.oregon-postgres.render.com/trendit3_4h66'
+        or 'postgresql://trendit3_toru_user:f8kA8XmbVNChw8z4dkuTFIrsEv0lAP13@dpg-cl83nff6e7vc73a2ec20-a.oregon-postgres.render.com/trendit3_toru'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'

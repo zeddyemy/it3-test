@@ -95,7 +95,6 @@ class Trendit3User(db.Model):
                 'balance': self.wallet.balance,
                 'currency_name': self.wallet.currency_name,
                 'currency_code': self.wallet.currency_code,
-                'symbol': self.wallet.symbol
             },
             **address_info,  # Merge address information into the output dictionary
             **profile_data # Merge profile information into the output dictionary

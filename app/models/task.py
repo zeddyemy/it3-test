@@ -10,13 +10,13 @@ class Task(db.Model):
     type = db.Column(db.String(50), nullable=False)
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
-    media_id = db.Column(db.String(255), nullable=True)
+    media_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
     
     @classmethod
-    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_path=None, **kwargs):
-        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_path=media_path, **kwargs)
+    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
+        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -51,7 +51,7 @@ class Task(db.Model):
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_id,
+            'media_path': self.get_task_media(),
             'task_reference': self.task_ref,
             'payment_status': self.payment_status
         }
@@ -74,7 +74,7 @@ class AdvertTask(Task):
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_path,
+            'media_path': self.get_task_media(),
             'posts_count': self.posts_count,
             'target_country': self.target_country,
             'target_state': self.target_state,
@@ -101,7 +101,7 @@ class EngagementTask(Task):
             'user_id': self.user_id,
             'type': self.type,
             'platform': self.platform,
-            'media_path': self.media_path,
+            'media_path': self.get_task_media(),
             'goal': self.goal,
             'account_link': self.account_link,
             'engagements_count': self.engagements_count,

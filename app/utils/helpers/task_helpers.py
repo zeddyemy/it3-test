@@ -1,12 +1,39 @@
-import sys
+import sys, logging
 from flask import request, jsonify, current_app
 from sqlalchemy import desc, func, text
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import generate_slug, generate_random_string
+from app.utils.helpers.basic_helpers import generate_slug, generate_random_string, console_log
 from app.utils.helpers.img_helpers import save_image
+
+def get_tasks_dict_grouped_by(field, task_type):
+    tasks_dict = {}
+    
+    try:
+        if task_type == 'advert':
+            tasks = AdvertTask.query.filter_by(payment_status='Complete').all()
+        elif task_type == 'engagement':
+            tasks = EngagementTask.query.filter_by(payment_status='Complete').all()
+        else:
+            raise ValueError(f"Invalid task_type: {task_type}")
+
+        for task in tasks:
+            key = getattr(task, field)
+            if key not in tasks_dict:
+                tasks_dict[key] = {
+                    'total': 0,
+                    'tasks': [],
+                }
+            tasks_dict[key]['total'] += 1
+            tasks_dict[key]['tasks'].append(task.to_dict())
+    except AttributeError as e:
+        raise ValueError(f"Invalid field: {field}")
+    except Exception as e:
+        raise e
+
+    return tasks_dict
 
 
 def get_task_by_ref(task_ref):

@@ -19,6 +19,16 @@ def get_all_engagement_tasks():
     return TaskController.get_engagement_tasks()
 
 
+@bp.route('/tasks/advert/grouped-by/<field>', methods=['GET'])
+def get_advert_tasks_by(field):
+    return TaskController.get_advert_tasks_by(field)
+
+
+@bp.route('/tasks/engagement/grouped-by/<field>', methods=['GET'])
+def get_engagement_tasks_by(field):
+    return TaskController.get_engagement_tasks_by(field)
+
+
 @bp.route('/tasks/new', methods=['POST'])
 @jwt_required(optional=True)
 def create_task():

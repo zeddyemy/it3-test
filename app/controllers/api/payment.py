@@ -136,7 +136,7 @@ class PaymentController:
                             msg = 'Payment verified and Task has already been created successfully'
                             extra_data.update({'task': task_dict})
                         elif payment_type == 'credit-wallet':
-                            msg = 'Wallet already credited successfully'
+                            msg = 'Payment verified and Wallet already credited'
                             extra_data.update({'user': trendit3_user.to_dict()})
                     
                 else:

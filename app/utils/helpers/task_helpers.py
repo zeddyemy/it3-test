@@ -107,7 +107,7 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         else:
             return None
     except Exception as e:
-        current_app.logger.error(f"An error occurred while saving Task {data.get('task_type')}: {str(e)}")
+        logging.exception(f"An exception occurred trying to save Task {data.get('task_type')}:\n", str(e))
         db.session.rollback()
         console_log('sys excInfo', sys.exc_info())
         return None
@@ -116,9 +116,13 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
 def save_performed_task(data, pt_id=None, status='Pending'):
     try:
         user_id = int(get_jwt_identity())
-        task_id = int(data.get('task_id', ''))
-        task = Task.query.get(task_id)
+        task_id = int(data.get('task_id', 0))
         screenshot = request.files['screenshot']
+        
+        task = Task.query.get(task_id)
+        if task is None:
+            raise ValueError("Task not found.")
+        
         task_type = task.type
         
         performed_task = None
@@ -130,14 +134,14 @@ def save_performed_task(data, pt_id=None, status='Pending'):
                 screenshot_id = save_image(screenshot)
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
-                return None
+                raise Exception("Error saving Screenshot.")
         elif screenshot.filename == '' and task:
             if task.media_id:
                 screenshot_id = task.media_id
             else:
-                screenshot_id = None
+                raise Exception("No screenshot provided.")
         else:
-            screenshot_id = None
+            raise Exception("No screenshot provided.")
         
         if performed_task:
             performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=screenshot_id, status=status)
@@ -148,7 +152,6 @@ def save_performed_task(data, pt_id=None, status='Pending'):
             
             return new_performed_task
     except Exception as e:
-        current_app.logger.error(f"An error occurred while saving performed task {data.get('task_type')}: {str(e)}")
+        logging.exception("An exception occurred trying to save performed task:\n", str(e))
         db.session.rollback()
-        console_log('sys excInfo', sys.exc_info())
-        return None
+        raise e

@@ -3,7 +3,7 @@ from flask import request, jsonify
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.task import TaskPerformance
+from app.models.task import TaskPerformance, Task
 from app.utils.helpers.task_helpers import save_performed_task
 from app.utils.helpers.response_helpers import error_response, success_response
 from app.utils.helpers.basic_helpers import generate_random_string, console_log
@@ -16,17 +16,26 @@ class TaskPerformanceController:
         
         try:
             data = request.form.to_dict()
+            task = Task.query.get(int(data.get('task_id', '')))
+            if task is None:
+                return error_response('Task not found', 404)
             
             new_performed_task = save_performed_task(data)
+            
             if new_performed_task is None:
                 return error_response('Error performing task', 500)
             
             status_code = 201
             msg = 'Task Performed successfully'
             extra_data = {'performed_task': new_performed_task.to_dict()}
+        except ValueError as e:
+            error =  True
+            msg = str(e)
+            status_code = 404
+            logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
         except Exception as e:
             error = True
-            msg = 'Error performing task'
+            msg = f'Error performing task: {e}'
             status_code = 500
             logging.exception("An exception occurred trying to create performed tasks:\n", str(e))
         if error:
@@ -97,16 +106,21 @@ class TaskPerformanceController:
             if performed_task is None:
                 return error_response('Performed task not found', 404)
             
-            updated_performed_task = save_performed_task(data, pt_id, 'completed')
+            updated_performed_task = save_performed_task(data, pt_id, 'pending')
             if updated_performed_task is None:
                 return error_response('Error updating performed task', 500)
             
             status_code = 200
             msg = 'Performed Task updated successfully'
             extra_data = {'performed_task': updated_performed_task.to_dict()}
+        except ValueError as e:
+            error =  True
+            msg = f'error occurred updating performed task: {str(e)}'
+            status_code = 500
+            logging.exception("An exception occurred trying to create performed tasks:", str(e))
         except Exception as e:
             error = True
-            msg = 'Error updating performed tasks'
+            msg = f'Error updating performed task: {e}'
             status_code = 500
             logging.exception("An exception occurred trying to update performed tasks:\n", str(e))
         if error:

@@ -36,6 +36,33 @@ class TaskController:
     
     
     @staticmethod
+    def get_single_task(task_id):
+        error = False
+        
+        try:
+            task = Task.query.get(task_id)
+            if task is None:
+                return error_response('Task not found', 404)
+            
+            task_dict = task.to_dict()
+            
+            msg = 'Task fetched successfully'
+            status_code = 200
+            extra_data = {
+                'task': task_dict
+            }
+        except Exception as e:
+            error = True
+            msg = 'Error getting task'
+            status_code = 500
+            logging.exception("An exception occurred trying to get task:\n", str(e))
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+    
+    
+    @staticmethod
     def get_advert_tasks():
         error = False
         

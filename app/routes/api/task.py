@@ -8,6 +8,9 @@ from app.controllers.api import TaskController
 def get_all_tasks():
     return TaskController.get_tasks()
 
+@bp.route('/tasks/<int:task_id>', methods=['GET'])
+def get_single_task(task_id):
+    return TaskController.get_single_task(task_id)
 
 @bp.route('/tasks/advert', methods=['GET'])
 def get_all_advert_tasks():

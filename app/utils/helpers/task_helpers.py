@@ -109,5 +109,46 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
     except Exception as e:
         current_app.logger.error(f"An error occurred while saving Task {data.get('task_type')}: {str(e)}")
         db.session.rollback()
-        print(f'\n\n{"sys excInfo":-^30}\n', sys.exc_info(), f'\n{"///":-^30}\n\n')
+        console_log('sys excInfo', sys.exc_info())
+        return None
+
+
+def save_performed_task(data, pt_id=None, status='Pending'):
+    try:
+        user_id = int(get_jwt_identity())
+        task_id = int(data.get('task_id', ''))
+        task = Task.query.get(task_id)
+        screenshot = request.files['screenshot']
+        task_type = task.type
+        
+        performed_task = None
+        if pt_id:
+            performed_task = TaskPerformance.query.get(pt_id)
+            
+        if screenshot.filename != '':
+            try:
+                screenshot_id = save_image(screenshot)
+            except Exception as e:
+                current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
+                return None
+        elif screenshot.filename == '' and task:
+            if task.media_id:
+                screenshot_id = task.media_id
+            else:
+                screenshot_id = None
+        else:
+            screenshot_id = None
+        
+        if performed_task:
+            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=screenshot_id, status=status)
+            
+            return performed_task
+        else:
+            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=screenshot_id, status=status)
+            
+            return new_performed_task
+    except Exception as e:
+        current_app.logger.error(f"An error occurred while saving performed task {data.get('task_type')}: {str(e)}")
+        db.session.rollback()
+        console_log('sys excInfo', sys.exc_info())
         return None

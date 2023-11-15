@@ -138,6 +138,7 @@ class TaskPerformance(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
+    reward_money = db.Column(db.Float(), default=00.00, nullable=False)
     proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     status = db.Column(db.String(80), default='Pending')
     
@@ -146,8 +147,8 @@ class TaskPerformance(db.Model):
     
     
     @classmethod
-    def create_task_performance(cls, user_id, task_id, task_type, proof_screenshot_id, status):
-        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=proof_screenshot_id, status=status)
+    def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
+        task = cls(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=proof_screenshot_id, status=status)
         
         db.session.add(task)
         db.session.commit()
@@ -181,6 +182,7 @@ class TaskPerformance(db.Model):
             'user_id': self.user_id,
             'task_id': self.task_id,
             'task_type': self.task_type,
+            'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
         }

@@ -54,7 +54,7 @@ class TaskPerformanceController:
             msg = 'All Performed Tasks fetched successfully'
             status_code = 200
             extra_data = {
-                'Total': len(pt_dict),
+                'total': len(pt_dict),
                 'all_performed_task': pt_dict
             }
         except Exception as e:

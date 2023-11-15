@@ -117,6 +117,7 @@ def save_performed_task(data, pt_id=None, status='Pending'):
     try:
         user_id = int(get_jwt_identity())
         task_id = int(data.get('task_id', 0))
+        reward_money = float(data.get('reward_money'))
         screenshot = request.files['screenshot']
         
         task = Task.query.get(task_id)
@@ -144,11 +145,11 @@ def save_performed_task(data, pt_id=None, status='Pending'):
             raise Exception("No screenshot provided.")
         
         if performed_task:
-            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=screenshot_id, status=status)
+            performed_task.update(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, status=status)
             
             return performed_task
         else:
-            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, proof_screenshot_id=screenshot_id, status=status)
+            new_performed_task = TaskPerformance.create_task_performance(user_id=user_id, task_id=task_id, task_type=task_type, reward_money=reward_money, proof_screenshot_id=screenshot_id, status=status)
             
             return new_performed_task
     except Exception as e:

@@ -4,6 +4,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.models import Image
+from config import Config
 
 # Define the User data model. added flask_login UserMixin!!
 class Trendit3User(db.Model):
@@ -83,6 +84,7 @@ class Trendit3User(db.Model):
                 'firstname': self.profile.firstname,
                 'lastname': self.profile.lastname,
                 'profile_picture': self.profile.get_profile_img(),
+                'referral_link': self.profile.referral_link
             })
 
         return {
@@ -109,12 +111,19 @@ class Profile(db.Model):
     lastname = db.Column(db.String(200), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
     profile_picture_id = db.Column(db.Integer(), db.ForeignKey('image.id'), nullable=True)
+    referral_code = db.Column(db.String(255), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
     trendit3_user = db.relationship('Trendit3User', back_populates="profile")
     
     def __repr__(self):
         return f'<profile ID: {self.id}, name: {self.firstname}>'
+    
+    @property
+    def referral_link(self):
+        if self.referral_code is None:
+            return None
+        return f'{Config.DOMAIN_NAME}/{self.referral_code}'
     
     def update(self, **kwargs):
         for key, value in kwargs.items():
@@ -137,7 +146,8 @@ class Profile(db.Model):
             'firstname': self.firstname,
             'lastname': self.lastname,
             'phone': self.phone,
-            'profile_picture': self.get_profile_img()
+            'profile_picture': self.get_profile_img(),
+            'referral_link': f'{self.referral_link}'
         }
 
 
@@ -184,7 +194,7 @@ class PwdResetToken(db.Model):
     trendit3_user = db.relationship('Trendit3User', back_populates="pwd_reset_token")
     
     def __repr__(self):
-        return f'<ID: {self.id}, user ID: {self.user_id}, code: ******, used: {self.used}>'
+        return f'<ID: {self.id}, user ID: {self.trendit3_user_id}, code: ******, used: {self.used}>'
     
     @classmethod
     def create_token(cls, reset_token, trendit3_user_id):
@@ -208,3 +218,39 @@ class PwdResetToken(db.Model):
             'user_id': self.trendit3_user_id,
         }
 
+
+class ReferralHistory(db.Model):
+    __tablename__ = "referral_history"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(900), nullable=False, unique=True)
+    status = db.Column(db.String(900), nullable=False, unique=True)
+    date_joined = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('referrals', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<ID: {self.id}, user ID: {self.trendit3_user_id}, referred_username: {self.username}, status: {self.status}>'
+
+    @classmethod
+    def create_referral_history(cls, username, status, trendit3_user, date_joined=datetime.utcnow):
+        referral_history = cls(username=username, status=status, date_joined=date_joined, trendit3_user=trendit3_user)
+        
+        db.session.add(referral_history)
+        db.session.commit()
+        return referral_history
+    
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'status': self.status,
+            'referrer_id': self.trendit3_user_id,
+            'date': self.date_joined,
+        }

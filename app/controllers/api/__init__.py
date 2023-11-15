@@ -5,3 +5,4 @@ from app.controllers.api.item_interactions import ItemInteractionsController
 from app.controllers.api.task import TaskController
 from app.controllers.api.task_performance import TaskPerformanceController
 from app.controllers.api.profile import ProfileController
+from app.controllers.api.referral import ReferralController

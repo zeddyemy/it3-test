@@ -12,6 +12,31 @@ from app.utils.helpers.payment_helpers import is_paid, initialize_payment, debit
 
 class TaskController:
     @staticmethod
+    def get_current_user_tasks():
+        error = False
+        
+        try:
+            current_user_id = int(get_jwt_identity())
+            tasks = Task.query.filter(Task.trendit3_user_id == current_user_id, Task.payment_status == 'Complete').all()
+            all_task_dict = [task.to_dict() for task in tasks]
+            msg = 'All Tasks created by current user fetched successfully'
+            status_code = 200
+            extra_data = {
+                'Total': len(all_task_dict),
+                'all_task': all_task_dict
+            }
+        except Exception as e:
+            error = True
+            msg = 'Error getting all tasks created by current user'
+            status_code = 500
+            logging.exception("An exception trying to get all Tasks by current user:\n", str(e))
+        if error:
+            return error_response(msg, status_code)
+        else:
+            return success_response(msg, status_code, extra_data)
+    
+    
+    @staticmethod
     def get_tasks():
         error = False
         

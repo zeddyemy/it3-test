@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import request
 from app.routes.api import bp
 from app.controllers.api import AuthController, ProfileController
 

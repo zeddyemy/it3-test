@@ -6,13 +6,15 @@ from app.models.image import Image
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
+    
+    trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
     
     @classmethod
     def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
@@ -69,7 +71,7 @@ class Task(db.Model):
             
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'user_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -78,6 +80,7 @@ class Task(db.Model):
             **advert_task_dict,
             **engagement_task_dict 
         }
+
 
 class AdvertTask(Task):
     id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
@@ -135,16 +138,18 @@ class EngagementTask(Task):
 
 class TaskPerformance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=False)
     proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     status = db.Column(db.String(80), default='Pending')
+    date_completed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     def __repr__(self):
         return f'<ID: {self.id}, User ID: {self.user_id}, Task ID: {self.task_id}, Task Type: {self.task_type}, Status: {self.status}>'
     
+    user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
+    trendit3_user = db.relationship('Trendit3User', backref=db.backref('performed_tasks', lazy='dynamic'))
     
     @classmethod
     def create_task_performance(cls, user_id, task_id, task_type, reward_money, proof_screenshot_id, status):
@@ -185,4 +190,5 @@ class TaskPerformance(db.Model):
             'reward_money': self.reward_money,
             'proof_screenshot_path': self.get_proof_screenshot(),
             'status': self.status,
+            'date_completed': self.date_completed
         }

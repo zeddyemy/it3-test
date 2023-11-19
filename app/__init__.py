@@ -47,6 +47,9 @@ def create_app(config_class=Config):
     from app.routes.api import bp as api_bp
     app.register_blueprint(api_bp)
     
+    from app.routes.api_admin import bp as api_admin_bp
+    app.register_blueprint(api_admin_bp)
+    
     from app.routes.error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
     

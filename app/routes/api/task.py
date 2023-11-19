@@ -4,6 +4,11 @@ from app.routes.api import bp
 from app.controllers.api import TaskController
 
 
+@bp.route('/current-user/tasks', methods=['GET'])
+@jwt_required()
+def get_current_user_tasks():
+    return TaskController.get_current_user_tasks()
+
 @bp.route('/tasks', methods=['GET'])
 def get_all_tasks():
     return TaskController.get_tasks()

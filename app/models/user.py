@@ -123,7 +123,7 @@ class Profile(db.Model):
     def referral_link(self):
         if self.referral_code is None:
             return None
-        return f'{Config.DOMAIN_NAME}/{self.referral_code}'
+        return f'{Config.DOMAIN_NAME}/signup/{self.referral_code}'
     
     def update(self, **kwargs):
         for key, value in kwargs.items():

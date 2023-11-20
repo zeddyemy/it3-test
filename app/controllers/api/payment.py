@@ -47,19 +47,22 @@ class PaymentController:
             # Extract body from request
             data = request.get_json()
             
-            # Verify transaction with FlutterWave
-            # Extract transaction_id from request body
-            transaction_id = data.get('transaction_id')
-            headers = {
-                "Authorization": "Bearer {}".format(Config.FLUTTER_SECRET_KEY),
+            # Verify transaction with Paystack
+            # Extract reference from request body
+            reference = data.get('reference')
+            auth_headers = {
+                "Authorization": "Bearer {}".format(Config.PAYSTACK_SECRET_KEY),
                 "Content-Type": "application/json"
             }
-            flutter_response = requests.get(f'https://api.flutterwave.com/v3/transactions/{transaction_id}/verify', headers=headers)
-            response_data = flutter_response.json()
+            paystack_response = requests.get('https://api.paystack.co/transaction/verify/{}'.format(reference), headers=auth_headers)
+            verification_response = paystack_response.json()
+            
+            console_log('verification_response', verification_response)
+
             
             # Extract needed data
-            amount = response_data['data']['amount']
-            tx_ref = response_data['data']['tx_ref']
+            amount = verification_response['data']['amount'] / 100  # Convert from kobo to naira
+            tx_ref = f"rave-{verification_response['data']['reference']}"
             
             transaction = Transaction.query.filter_by(tx_ref=tx_ref).first()
             if transaction:
@@ -71,7 +74,7 @@ class PaymentController:
                     return error_response('User does not exist', 404)
                         
                 # if verification was successful
-                if response_data['status'] == 'success':
+                if verification_response['status'] and verification_response['data']['status'] == 'success':
                     status_code = 200
                     msg = 'Payment verified successfully'
                     extra_data = {}
@@ -101,7 +104,7 @@ class PaymentController:
                                 'membership_fee_paid': membership_fee_paid,
                             })
                         elif payment_type == 'task_creation':
-                            task_ref = response_data['data']['meta']['task_ref']
+                            task_ref = verification_response['data']['metadata']['task_ref']
                             task = get_task_by_ref(task_ref)
                             task.update(payment_status='Complete')
                             task_dict = task.to_dict()
@@ -130,7 +133,7 @@ class PaymentController:
                             msg = 'Payment verified successfully and Membership fee already accepted'
                             extra_data.update({'membership_fee_paid': trendit3_user.membership.membership_fee_paid,})
                         elif payment_type == 'task_creation':
-                            task_ref = response_data['data']['meta']['task_ref']
+                            task_ref = verification_response['data']['metadata']['task_ref']
                             task = get_task_by_ref(task_ref)
                             task_dict = task.to_dict()
                             msg = 'Payment verified and Task has already been created successfully'
@@ -139,6 +142,15 @@ class PaymentController:
                             msg = 'Payment verified and Wallet already credited'
                             extra_data.update({'user': trendit3_user.to_dict()})
                     
+                elif verification_response['status'] and verification_response['data']['status'] == 'abandoned':
+                    # Payment was not completed
+                    if transaction.status != 'Abandoned':
+                        transaction.status = 'Abandoned' # update the status
+                        db.session.commit()
+                        
+                    extra_data = {}
+                    status_code = 200
+                    msg = f"{verification_response['data']['gateway_response']}"
                 else:
                     # Payment was not successful
                     if transaction.status != 'Failed':
@@ -147,27 +159,29 @@ class PaymentController:
                         
                     error = True
                     status_code = 400
-                    msg = 'Transaction verification failed: ' + response_data['message']
+                    msg = 'Transaction verification failed: ' + verification_response['message']
             else:
                 error = True
                 status_code = 404
                 msg = 'Transaction not found'
-        except DataError:
+        except DataError as e:
             error = True
             msg = f"Invalid Entry"
             status_code = 400
             db.session.rollback()
-        except DatabaseError:
+            logging.exception("A DataError exception occurred during payment verification.", str(e))
+        except DatabaseError as e:
             error = True
             msg = f"Error connecting to the database"
             status_code = 500
             db.session.rollback()
+            logging.exception("A DatabaseError exception occurred during payment verification.", str(e))
         except Exception as e:
             error = True
             msg = 'An error occurred while processing the request.'
             status_code = 500
-            logging.exception("An exception occurred during registration.\n", str(e))
             db.session.rollback()
+            logging.exception("An exception occurred during payment verification.\n", str(e))
         finally:
             db.session.close()
         if error:

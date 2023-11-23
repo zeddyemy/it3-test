@@ -1,13 +1,11 @@
-import os, random, string, pathlib
+import os, random, string
 from datetime import date
 from werkzeug.utils import secure_filename
-from flask import url_for
-from PIL import Image as PillowImage
 import cloudinary
 import cloudinary.uploader
 
 from app.extensions import db
-from app.models.image import Image
+from app.models import Media
 from config import Config
 
 cloudinary.config( 
@@ -16,40 +14,49 @@ cloudinary.config(
     api_secret = Config.CLOUDINARY_API_SECRET 
 )
 
-def save_image(img_file):
+def save_image(media_file):
     '''
-    This takes an Image file,
-    uploads the Image file to Cloudinary,
-    and then return the image id after adding the image to Image Table
+    This takes a media file (image or video),
+    uploads the media file to Cloudinary,
+    and then return the media id after adding the media to Media Table
     '''
     
     # Generate a random string and append it to the original file name
     rand_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
-    img_name = secure_filename(img_file.filename) # Grab file name of the selected image
-    the_img_name, theImgExt = os.path.splitext(os.path.basename(img_name)) # get the file name and extension
-    new_img_name = f"{the_img_name}-{rand_string}"
+    media_name = secure_filename(media_file.filename) # Grab file name of the selected media
+    the_media_name, theMediaExt = os.path.splitext(os.path.basename(media_name)) # get the file name and extension
+    new_media_name = f"{the_media_name}-{rand_string}"
+    
     
     # create the path were image will be stored
     year = (str(date.today().year))
     month = (str(date.today().month).zfill(2))
     folder_path = f"{year}/{month}"
     
-    # Upload the image to Cloudinary
+    
+    # Check the file type and set the resource_type accordingly
+    if theMediaExt.lower() in ['.jpg', '.jpeg', '.png', '.webp']:
+        resource_type = "image"
+    elif theMediaExt.lower() in ['.mp4', '.avi', '.mov', '.flv']:
+        resource_type = "video"
+    else:
+        raise ValueError("Invalid file type")
+    
+    # Upload the media to Cloudinary
     upload_result = cloudinary.uploader.upload(
-        img_file,
-        public_id = new_img_name,
+        media_file,
+        resource_type = resource_type,
+        public_id = new_media_name,
         folder = folder_path,
-        format = 'jpg',
-        quality = 87
     )
-    # Get the URLs of the uploaded image
-    original_jpg = upload_result['url']
+    # Get the URL of the uploaded media
+    original_media = upload_result['url']
     
-    # Add the image properties to database
-    newImage = Image(filename=img_name, original_jpg=original_jpg)
+    # Add the media properties to database
+    newMedia = Media(filename=media_name, original_media=original_media)
     
-    db.session.add(newImage)
+    db.session.add(newMedia)
     db.session.commit()
-    img_id = newImage.id
+    media_id = newMedia.id
     
-    return img_id
+    return media_id

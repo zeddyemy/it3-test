@@ -3,7 +3,7 @@ from sqlalchemy.orm import backref
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app.models import Image
+from app.models import Media
 from config import Config
 
 # Define the User data model. added flask_login UserMixin!!
@@ -110,7 +110,7 @@ class Profile(db.Model):
     firstname = db.Column(db.String(200), nullable=True)
     lastname = db.Column(db.String(200), nullable=True)
     phone = db.Column(db.String(120), nullable=True)
-    profile_picture_id = db.Column(db.Integer(), db.ForeignKey('image.id'), nullable=True)
+    profile_picture_id = db.Column(db.Integer(), db.ForeignKey('media.id'), nullable=True)
     referral_code = db.Column(db.String(255), nullable=True)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id', ondelete='CASCADE'), nullable=False,)
@@ -132,9 +132,9 @@ class Profile(db.Model):
     
     def get_profile_img(self):
         if self.profile_picture_id:
-            theImage = Image.query.get(self.profile_picture_id)
+            theImage = Media.query.get(self.profile_picture_id)
             if theImage:
-                return theImage.get_path("original")
+                return theImage.get_path()
             else:
                 return None
         else:

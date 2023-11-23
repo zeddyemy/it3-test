@@ -2,14 +2,14 @@ from app.extensions import db
 from sqlalchemy.orm import backref
 from datetime import datetime
 
-from app.models.image import Image
+from app.models import Media
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)
     platform = db.Column(db.String(80), nullable=False)
     fee = db.Column(db.Float, nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
+    media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
     
@@ -39,9 +39,9 @@ class Task(db.Model):
 
     def get_task_media(self):
         if self.media_id:
-            theImage = Image.query.get(self.media_id)
-            if theImage:
-                return theImage.get_path("original")
+            theMedia = Media.query.get(self.media_id)
+            if theMedia:
+                return theMedia.get_path()
             else:
                 return None
         else:
@@ -141,7 +141,7 @@ class TaskPerformance(db.Model):
     task_id = db.Column(db.Integer, nullable=False)  # either an AdvertTask id or an EngagementTask id
     task_type = db.Column(db.String(80), nullable=False)  # either 'advert' or 'engagement'
     reward_money = db.Column(db.Float(), default=00.00, nullable=False)
-    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
+    proof_screenshot_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
     status = db.Column(db.String(80), default='Pending')
     date_completed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
@@ -173,7 +173,7 @@ class TaskPerformance(db.Model):
     
     def get_proof_screenshot(self):
         if self.proof_screenshot_id:
-            theImage = Image.query.get(self.proof_screenshot_id)
+            theImage = Media.query.get(self.proof_screenshot_id)
             if theImage:
                 return theImage.get_path("original")
             else:

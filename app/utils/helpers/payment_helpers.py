@@ -3,7 +3,7 @@ from flask import json
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
-from app.models.payment import Transaction
+from app.models.payment import Payment, Transaction
 from app.models.user import Trendit3User
 from app.utils.helpers.basic_helpers import console_log
 from app.utils.helpers.response_helpers import error_response, success_response
@@ -66,7 +66,7 @@ def initialize_payment(user_id, data, payment_type=None, meta_data=None):
         console_log('response_data', response_data)
         
         if response_data['status']:
-            transaction = Transaction(tx_ref="rave-" + response_data['data']['reference'], user_id=user_id, payment_type=payment_type, status='Pending')
+            transaction = Transaction(tx_ref=response_data['data']['reference'], user_id=user_id, payment_type=payment_type, status='Pending')
             db.session.add(transaction)
             db.session.commit()
             
@@ -172,3 +172,6 @@ def credit_wallet(user_id, amount):
         db.session.rollback()
         raise e
 
+
+def payment_recorded(reference):
+    return bool(Payment.query.filter_by(tx_ref=reference).first())

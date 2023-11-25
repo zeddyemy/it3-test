@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
 from app.utils.helpers.basic_helpers import generate_slug, generate_random_string, console_log
-from app.utils.helpers.img_helpers import save_image
+from app.utils.helpers.media_helpers import save_media
 
 def get_tasks_dict_grouped_by(field, task_type):
     tasks_dict = {}
@@ -73,7 +73,7 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         if media.filename != '':
             try:
-                media_id = save_image(media)
+                media_id = save_media(media)
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving image for Task: {str(e)}")
                 return None
@@ -132,7 +132,7 @@ def save_performed_task(data, pt_id=None, status='Pending'):
             
         if screenshot.filename != '':
             try:
-                screenshot_id = save_image(screenshot)
+                screenshot_id = save_media(screenshot)
             except Exception as e:
                 current_app.logger.error(f"An error occurred while saving Screenshot: {str(e)}")
                 raise Exception("Error saving Screenshot.")

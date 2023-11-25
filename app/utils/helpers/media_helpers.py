@@ -14,7 +14,7 @@ cloudinary.config(
     api_secret = Config.CLOUDINARY_API_SECRET 
 )
 
-def save_image(media_file):
+def save_media(media_file):
     '''
     This takes a media file (image or video),
     uploads the media file to Cloudinary,

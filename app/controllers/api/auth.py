@@ -363,6 +363,7 @@ class AuthController:
             # Check if the reset token exists in the database
             pwd_reset_token = PwdResetToken.query.filter_by(reset_token=reset_token).first()
             if not pwd_reset_token:
+                console_log('DB reset token', pwd_reset_token)
                 return error_response('The Reset code not found. Please check your mail for the correct code and try again.', 404)
             
             if pwd_reset_token.used:

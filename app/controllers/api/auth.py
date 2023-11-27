@@ -263,10 +263,7 @@ class AuthController:
                 if user.verify_password(pwd):
                     # User authentication successful
                     access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880), additional_claims={'type': 'access'})
-                    extra_data = {
-                        'user_id': user.id,
-                        'user_data': user.to_dict()
-                    }
+                    extra_data = {}
                     # Create response
                     resp = make_response(success_response('User logged in successfully', 200, extra_data))
                     

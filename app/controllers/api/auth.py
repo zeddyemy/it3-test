@@ -68,7 +68,7 @@ class AuthController:
             if referrer_code:
                 identity.update({'referrer_code': referrer_code})
             
-            signup_token = create_access_token(identity=identity, expires_delta=expires)
+            signup_token = create_access_token(identity=identity, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
         except InvalidRequestError as e:
             error = True
@@ -123,7 +123,7 @@ class AuthController:
             
             # Create a JWT that includes the user's info and the verification code
             expires = timedelta(minutes=30)
-            signup_token = create_access_token(identity=user_info, expires_delta=expires)
+            signup_token = create_access_token(identity=user_info, expires_delta=expires, additional_claims={'type': 'signup'})
             extra_data = {'signup_token': signup_token}
         except ExpiredSignatureError as e:
             error = True
@@ -262,7 +262,7 @@ class AuthController:
             if user:
                 if user.verify_password(pwd):
                     # User authentication successful
-                    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880))
+                    access_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=2880), additional_claims={'type': 'access'})
                     extra_data = {
                         'user_id': user.id,
                         'user_data': user.to_dict()

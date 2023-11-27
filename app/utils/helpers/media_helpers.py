@@ -50,10 +50,10 @@ def save_media(media_file):
         folder = folder_path,
     )
     # Get the URL of the uploaded media
-    original_media = upload_result['url']
+    original_media_path = upload_result['url']
     
     # Add the media properties to database
-    newMedia = Media(filename=media_name, original_media=original_media)
+    newMedia = Media(filename=media_name, media_path=original_media_path)
     
     db.session.add(newMedia)
     db.session.commit()

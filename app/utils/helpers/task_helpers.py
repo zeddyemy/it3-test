@@ -81,7 +81,7 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
             try:
                 media_id = save_media(media)
             except Exception as e:
-                current_app.logger.error(f"An error occurred while saving image for Task: {str(e)}")
+                current_app.logger.error(f"An error occurred while saving media for Task: {str(e)}")
                 return None
         elif media.filename == '' and task:
             if task.media_id:

@@ -113,6 +113,7 @@ class TaskController:
 
     @staticmethod
     def get_engagement_tasks():
+        error = False
         try:
             tasks = EngagementTask.query.filter_by(payment_status='Complete').all()
             all_task_dict = [task.to_dict() for task in tasks]

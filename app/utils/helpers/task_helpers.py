@@ -54,7 +54,10 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         task_type = data.get('task_type', '')
         platform = data.get('platform', '')
         fee = data.get('amount', '')
-        posts_count = int(data.get('posts_count', ''))
+        
+        posts_count_str = data.get('posts_count', '')
+        posts_count = int(posts_count_str) if posts_count_str and posts_count_str.isdigit() else 0
+        
         target_country = data.get('target_country', '')
         target_state = data.get('target_state', '')
         gender = data.get('gender', '')
@@ -64,7 +67,10 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         goal = data.get('goal','')
         account_link = data.get('account_link', '')
-        engagements_count = int(data.get('engagements_count', ''))
+        
+        engagements_count_str = data.get('engagements_count', '')
+        engagements_count = int(engagements_count_str) if engagements_count_str and engagements_count_str.isdigit() else 0
+
         task_ref = task_ref or f"task-{generate_random_string(8)}"
         
         task = None

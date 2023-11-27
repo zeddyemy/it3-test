@@ -17,8 +17,8 @@ class Task(db.Model):
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
     
     @classmethod
-    def create_task(cls, user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
-        task = cls(user_id=user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
+    def create_task(cls, trendit3_user_id, type, platform, fee, task_ref, payment_status, media_id=None, **kwargs):
+        task = cls(trendit3_user_id=trendit3_user_id, type=type, platform=platform, fee=fee, task_ref=task_ref, payment_status=payment_status, media_id=media_id, **kwargs)
         
         # Set additional attributes from kwargs
         for key, value in kwargs.items():
@@ -92,12 +92,12 @@ class AdvertTask(Task):
     hashtags = db.Column(db.Text, nullable=False)
     
     def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
+        return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Platform: {self.platform}, Posts Count: {self.posts_count}>'
     
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'user_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -119,12 +119,12 @@ class EngagementTask(Task):
     engagements_count = db.Column(db.Integer, nullable=False)
     
     def __repr__(self):
-        return f'<ID: {self.id}, User ID: {self.user_id}, Goal: {self.goal}, Platform: {self.platform}>'
+        return f'<ID: {self.id}, User ID: {self.trendit3_user_id}, Goal: {self.goal}, Platform: {self.platform}>'
     
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'user_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),

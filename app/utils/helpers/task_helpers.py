@@ -87,21 +87,21 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
         
         if task_type == 'advert':
             if task:
-                task.update(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                task.update(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 return task
             else:
-                new_task = AdvertTask.create_task(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
+                new_task = AdvertTask.create_task(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, posts_count=posts_count, target_country=target_country, target_state=target_state, gender=gender, caption=caption, hashtags=hashtags)
                 
                 return new_task
             
         elif task_type == 'engagement':
             if task:
-                task.update(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                task.update(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return task
             else:
-                new_task = EngagementTask.create_task(user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
+                new_task = EngagementTask.create_task(trendit3_user_id=user_id, type=task_type, platform=platform, fee=fee, media_id=media_id, task_ref=task_ref, payment_status=payment_status, goal=goal, account_link=account_link, engagements_count=engagements_count)
                 
                 return new_task
         else:

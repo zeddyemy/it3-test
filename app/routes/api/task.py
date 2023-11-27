@@ -38,6 +38,6 @@ def get_engagement_tasks_by(field):
 
 
 @bp.route('/tasks/new', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
 def create_task():
     return TaskController.create_task()

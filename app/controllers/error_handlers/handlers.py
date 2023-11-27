@@ -45,7 +45,7 @@ class ErrorHandlers:
     
     @staticmethod
     def jwt_auth_error(error):
-        console_log('error', error)
+        console_log('JWT error', error)
         return jsonify({
             "status": 'failed',
             'message': 'User is not logged in',

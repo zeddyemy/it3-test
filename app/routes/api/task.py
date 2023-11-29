@@ -34,7 +34,7 @@ def get_advert_tasks_grouped_by_field(field):
 
 @bp.route('/tasks/advert/<platform>', methods=['GET'])
 def get_advert_tasks_by_platform(platform):
-    return TaskController.get_advert_tasks_by_platform(platform)
+    return TaskController.get_advert_tasks_by_platform(platform.lower())
 
 
 @bp.route('/tasks/engagement/grouped-by/<field>', methods=['GET'])

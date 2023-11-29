@@ -52,7 +52,7 @@ def save_task(data, task_ref=None, task_id=None, payment_status='Pending'):
     try:
         user_id = int(get_jwt_identity())
         task_type = data.get('task_type', '')
-        platform = data.get('platform', '')
+        platform = data.get('platform', '').lower()
         fee = data.get('amount', '')
         
         posts_count_str = data.get('posts_count', '')

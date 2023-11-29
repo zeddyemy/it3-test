@@ -17,14 +17,27 @@ class TaskController:
         
         try:
             current_user_id = int(get_jwt_identity())
-            tasks = Task.query.filter(Task.trendit3_user_id == current_user_id, Task.payment_status == 'Complete').all()
-            all_task_dict = [task.to_dict() for task in tasks]
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = Task.query.filter_by(trendit3_user_id=current_user_id, payment_status='Complete') \
+                .order_by(Task.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'User hasn\'t created any task yet', 200, extra_data)
+            
             msg = 'All Tasks created by current user fetched successfully'
             status_code = 200
-            extra_data = {
-                'Total': len(all_task_dict),
-                'all_task': all_task_dict
-            }
+            
         except Exception as e:
             error = True
             msg = 'Error getting all tasks created by current user'
@@ -41,14 +54,28 @@ class TaskController:
         error = False
         
         try:
-            tasks = Task.query.filter_by(payment_status='Complete').all()
-            all_task_dict = [task.to_dict() for task in tasks]
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = Task.query.filter_by(payment_status='Complete') \
+                .order_by(Task.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'There are no tasks yet', 200, extra_data)
+            
             msg = 'All Tasks fetched successfully'
             status_code = 200
-            extra_data = {
-                'Total': len(all_task_dict),
-                'all_task': all_task_dict
-            }
+            
         except Exception as e:
             error = True
             msg = 'Error getting all tasks'
@@ -92,19 +119,32 @@ class TaskController:
         error = False
         
         try:
-            tasks = AdvertTask.query.filter_by(payment_status='Complete').all()
-            all_task_dict = [task.to_dict() for task in tasks]
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = AdvertTask.query.filter_by(payment_status='Complete') \
+                .order_by(AdvertTask.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'There are no advert tasks yet', 200, extra_data)
+            
             msg = 'All Advert Tasks fetched successfully'
             status_code = 200
-            extra_data = {
-                'Total': len(all_task_dict),
-                'all_task': all_task_dict
-            }
+            
         except Exception as e:
             error = True
-            msg = 'Error getting all tasks'
+            msg = 'Error getting all advert tasks'
             status_code = 500
-            logging.exception("An exception occurred trying to get all Tasks:\n", str(e))
+            logging.exception("An exception occurred trying to get all Advert Tasks:\n", str(e))
         if error:
             return error_response(msg, status_code)
         else:
@@ -115,19 +155,32 @@ class TaskController:
     def get_engagement_tasks():
         error = False
         try:
-            tasks = EngagementTask.query.filter_by(payment_status='Complete').all()
-            all_task_dict = [task.to_dict() for task in tasks]
+            page = request.args.get("page", 1, type=int)
+            tasks_per_page = int(Config.TASKS_PER_PAGE)
+            pagination = EngagementTask.query.filter_by(payment_status='Complete') \
+                .order_by(EngagementTask.date_created.desc()) \
+                .paginate(page=page, per_page=tasks_per_page, error_out=False)
+            
+            tasks = pagination.items
+            current_tasks = [task.to_dict() for task in tasks]
+            extra_data = {
+                'total': pagination.total,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not tasks:
+                return success_response(f'There are no engagement tasks yet', 200, extra_data)
+            
             msg = 'All Engagement Tasks fetched successfully'
             status_code = 200
-            extra_data = {
-                'Total': len(all_task_dict),
-                'all_task': all_task_dict
-            }
+            
         except Exception as e:
             error = True
-            msg = 'Error getting all tasks'
+            msg = 'Error getting all engagement tasks'
             status_code = 500
-            logging.exception("An exception trying to get all Tasks:\n", str(e))
+            logging.exception("An exception trying to get all Engagement Tasks:", str(e))
         if error:
             return error_response(msg, status_code)
         else:
@@ -181,7 +234,9 @@ class TaskController:
             current_tasks = [task.to_dict() for task in tasks]
             extra_data = {
                 'total': pagination.total,
-                "all_task": current_tasks,
+                "all_tasks": current_tasks,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
             }
             
             if not tasks:
@@ -194,7 +249,6 @@ class TaskController:
             error = True
             status_code = 500
             msg = f"Error fetching Advert Tasks for {platform} from the database"
-            console_log(msg, e)
             logging.exception(f"An exception occurred during fetching Advert Tasks for {platform}", str(e))
         
         if error:

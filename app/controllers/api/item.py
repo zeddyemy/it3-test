@@ -23,6 +23,8 @@ class ItemController:
             extra_data = {
                 'total_items': pagination.total,
                 "items": current_items,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
             }
             
             if not items:

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_moment import Moment
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -53,18 +53,24 @@ def create_app(config_class=Config):
     from app.routes.error_handlers import bp as errorHandler_bp
     app.register_blueprint(errorHandler_bp)
     
-    @app.route("/test", methods=['GET'])
-    def test():
-        
-        task = Task.query.filter_by(id=2).first()
-        console_log('task', task)
-        key = getattr(task, 'platformx')
-        console_log('key', key)
-                    
-        
-        if task is None:
-            return key
-        else:
-            return 'no task'
+    @app.route("/test", methods=['PUT'])
+    def update_platform_to_lowercase():
+        try:
+            tasks = Task.query.all()
+            for task in tasks:
+                task.platform = task.platform.lower() if task.platform else task.platform
+            db.session.commit()
+            
+            return jsonify({
+                "status": 'done',
+                'message': 'Updated',
+                'status code': 200,
+            }), 200
+        except Exception as e:
+            return jsonify({
+                "status": 'failed',
+                'message': f'Error updating {e}',
+                'status code': 401,
+            }), 401
     
     return app

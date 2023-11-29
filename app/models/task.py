@@ -12,6 +12,7 @@ class Task(db.Model):
     media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=True)
     task_ref = db.Column(db.String(120), unique=True, nullable=False)
     payment_status = db.Column(db.String(80), nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     trendit3_user_id = db.Column(db.Integer, db.ForeignKey('trendit3_user.id'), nullable=False)
     trendit3_user = db.relationship('Trendit3User', backref=db.backref('tasks', lazy='dynamic'))
@@ -71,7 +72,7 @@ class Task(db.Model):
             
         return {
             'id': self.id,
-            'user_id': self.trendit3_user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -97,7 +98,7 @@ class AdvertTask(Task):
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.trendit3_user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),
@@ -124,7 +125,7 @@ class EngagementTask(Task):
     def to_dict(self):
         return {
             'id': self.id,
-            'user_id': self.trendit3_user_id,
+            'creator_id': self.trendit3_user_id,
             'type': self.type,
             'platform': self.platform,
             'media_path': self.get_task_media(),

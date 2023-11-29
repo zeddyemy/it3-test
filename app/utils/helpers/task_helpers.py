@@ -5,10 +5,10 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.task import Task, AdvertTask, EngagementTask, TaskPerformance
-from app.utils.helpers.basic_helpers import generate_slug, generate_random_string, console_log
+from app.utils.helpers.basic_helpers import generate_random_string, console_log
 from app.utils.helpers.media_helpers import save_media
 
-def get_tasks_dict_grouped_by(field, task_type):
+def get_tasks_dict_grouped_by_field(field, task_type):
     tasks_dict = {}
     
     try:

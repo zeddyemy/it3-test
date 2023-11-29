@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import ( IntegrityError, DataError, DatabaseError, InvalidRequestError, )
 from werkzeug.security import generate_password_hash
-from flask_jwt_extended import create_access_token, decode_token, set_access_cookies
+from flask_jwt_extended import create_access_token, decode_token, set_access_cookies, unset_jwt_cookies
 from flask_jwt_extended.exceptions import JWTDecodeError
 from jwt import ExpiredSignatureError
 
@@ -397,3 +397,12 @@ class AuthController:
         else:
             return success_response(msg, status_code)
 
+    @staticmethod
+    def logout():
+        try:
+            resp = make_response(success_response('User logged out successfully', 200))
+            unset_jwt_cookies(resp)
+            return resp
+        except Exception as e:
+            resp = make_response(error_response(f'Log out failed: {e}', 500))
+            return resp

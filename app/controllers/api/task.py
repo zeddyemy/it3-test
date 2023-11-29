@@ -194,6 +194,7 @@ class TaskController:
             error = True
             status_code = 500
             msg = f"Error fetching Advert Tasks for {platform} from the database"
+            console_log(msg, e)
             logging.exception(f"An exception occurred during fetching Advert Tasks for {platform}", str(e))
         
         if error:

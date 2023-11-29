@@ -15,6 +15,8 @@ class Config:
     UPLOADS_DIR = 'app/static/uploads'
     DOMAIN_NAME = 'www.trendit3.com'
     CLIENT_ORIGIN = os.environ.get('CLIENT_ORIGIN') or 'http://localhost:3000'
+    TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
+    ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
     
     # JWT configurations
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or "super-secret" # Change This

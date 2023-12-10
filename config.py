@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     STATIC_DIR = 'app/static'
     UPLOADS_DIR = 'app/static/uploads'
-    DOMAIN_NAME = 'www.trendit3.com'
+    DOMAIN_NAME = os.environ.get('DOMAIN_NAME') or 'www.trendit3.com'
     TASKS_PER_PAGE = os.environ.get('TASKS_PER_PAGE') or 10
     ITEMS_PER_PAGE = os.environ.get('ITEMS_PER_PAGE') or 10
     CLIENT_ORIGINS = os.environ.get('CLIENT_ORIGINS') or 'http://localhost:3000,https://trendit3.vercel.app'
@@ -36,7 +36,15 @@ class Config:
     PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY') or "sk_test_a8784e4f50809b0ee5cba711046090b0df20d413"
     PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY') or "pk_test_b6409653e947befe40cbacc78f7338de0e0764c3"
     
+    '''
     # mail configurations
+    MAIL_SERVER = 'smtp.hostinger.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'support@trendit3.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    '''
+    
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True

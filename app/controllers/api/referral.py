@@ -47,14 +47,27 @@ class ReferralController:
         error = False
         
         try:
-            referral_history = ReferralHistory.query.all()
-            rh_dict = [rh.to_dict() for rh in referral_history]
+            page = request.args.get("page", 1, type=int)
+            items_per_page = int(10)
+            
+            current_user_id = get_jwt_identity()
+            pagination = ReferralHistory.query.filter_by(trendit3_user_id=current_user_id).order_by(ReferralHistory.date_joined.desc()).paginate(page=page, per_page=items_per_page, error_out=False)
+            
+            referral_history = pagination.items
+            current_referral_history = [rh.to_dict() for rh in referral_history]
+            extra_data = {
+                "total": pagination.total,
+                "referral_history": current_referral_history,
+                "current_page": pagination.page,
+                "total_pages": pagination.pages,
+            }
+            
+            if not referral_history:
+                return success_response('No one has been referred yet', 200, extra_data)
+            
             msg = 'Referral history fetched successfully'
             status_code = 200
-            extra_data = {
-                'total': len(rh_dict),
-                'referral_history': rh_dict
-            }
+            
         except Exception as e:
             error = True
             msg = 'Error getting all referral history'
